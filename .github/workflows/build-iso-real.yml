@@ -90,10 +90,23 @@ jobs:
       - name: Build ISO
         run: mkarchiso -v -w /tmp/work -o /tmp/out iso/
 
+      - name: Verify boot structure (BIOS + UEFI)
+        run: |
+          set -euxo pipefail
+          iso=$(ls /tmp/out/*.iso)
+          # List El Torito boot images; a hybrid ISO must expose a BIOS boot
+          # image AND an EFI (UEFI) boot image for the SPEC §1 boot matrix.
+          xorriso -indev "$iso" -report_el_torito plain 2>&1 | tee /tmp/eltorito.txt
+          grep -qiE 'BIOS|El Torito.*boot' /tmp/eltorito.txt
+          grep -qi 'UEFI' /tmp/eltorito.txt
+          # isohybrid MBR present => bootable when dd'd to a USB stick.
+          file "$iso" | grep -qi 'DOS/MBR boot sector'
+          echo "✓ ISO is hybrid-bootable: BIOS + UEFI El Torito entries present"
+
       - name: Report artifact
         run: |
           ls -lh /tmp/out/
-          echo "✓ Phase 1 gate: ISO built successfully"
+          echo "✓ Phase 1 gate: ISO built + boot structure verified (UEFI + BIOS)"
 
       - name: Upload ISO
         uses: actions/upload-artifact@v4

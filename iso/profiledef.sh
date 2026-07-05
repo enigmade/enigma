@@ -9,8 +9,13 @@ iso_version="0.1.0"
 install_dir="arch"
 buildmodes=('iso')
 # Modern archiso bootmode identifiers. UEFI via systemd-boot (efiboot/loader);
-# BIOS via syslinux is added once the syslinux/ configs are in place.
-bootmodes=('uefi-x64.systemd-boot.esp' 'uefi-x64.systemd-boot.eltorito')
+# BIOS via syslinux (syslinux/syslinux.cfg). Covers SPEC §1 UEFI+BIOS matrix.
+bootmodes=(
+  'bios.syslinux.mbr'
+  'bios.syslinux.eltorito'
+  'uefi-x64.systemd-boot.esp'
+  'uefi-x64.systemd-boot.eltorito'
+)
 arch="x86_64"
 pacman_conf="pacman.conf"
 airootfs_image_type="erofs"
