@@ -14,7 +14,10 @@ bootmodes=('uefi-x64.systemd-boot.esp' 'uefi-x64.systemd-boot.eltorito')
 arch="x86_64"
 pacman_conf="pacman.conf"
 airootfs_image_type="erofs"
-airootfs_image_tool_options=('-zlz4hc,12' '-Ezcache-raid-stripe-width=32K')
+# lz4hc level 12 compression with tail-packing + dedupe (all valid mkfs.erofs
+# extended options). The previous -Ezcache-raid-stripe-width flag does not
+# exist and made mkfs.erofs fail with "Invalid argument".
+airootfs_image_tool_options=('-zlz4hc,12' '-Eztailpacking,dedupe')
 file_permissions=(
   ["/root/.automated_script.sh"]="0755"
   ["/root/.customize_airootfs.sh"]="0755"

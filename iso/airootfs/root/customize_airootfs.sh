@@ -9,7 +9,7 @@ echo "Enigma OS" > /etc/hostname
 sed -i 's/^#GRUB_BACKGROUND.*/GRUB_BACKGROUND="\/usr\/share\/pixmaps\/enigma-bg.png"/' /etc/default/grub 2>/dev/null || true
 
 # Configure SSH (disable by default in live mode)
-systemctl disable sshd.service
+systemctl disable sshd.service || true
 
 # Disable networkmanager wifi powersave (improves connectivity in live mode)
 mkdir -p /etc/NetworkManager/conf.d/
@@ -77,14 +77,14 @@ chmod 0440 /etc/sudoers.d/enigma-live
 pacman -Sc --noconfirm || true
 
 # Phase 2: Snapper + custom systemd-boot snapshot hook setup
-# Wire in the custom pacman hook for UEFI snapshot boot entries
+# The hook + generator ship in the airootfs (usr/share/enigma, usr/local/libexec);
+# wire the pacman hook into place for UEFI snapshot boot entries.
 mkdir -p /etc/pacman.d/hooks/
 cp /usr/share/enigma/hooks/99-enigma-snapshots-systemd-boot.hook /etc/pacman.d/hooks/ || true
-cp /usr/local/libexec/enigma-generate-snapshot-entries.sh /usr/local/libexec/ 2>/dev/null || true
 
-# Initialize snapper for root filesystem (will be created post-install)
-# Live mode doesn't use snapshots, but the config exists for installer
-mkdir -p /etc/snapper/
+# Initialize snapper config dir for the installer (live mode itself doesn't
+# snapshot). configs/ must exist before writing into it.
+mkdir -p /etc/snapper/configs/
 : > /etc/snapper/configs/root || true
 
 echo "Enigma OS customization complete (Phase 1 + 2)"
