@@ -24,27 +24,34 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Refresh base + install tooling
-        run: |
-          pacman -Syu --noconfirm archiso git curl
+        run: pacman -Syu --noconfirm archiso git curl sed grep
 
       - name: Enable CachyOS repositories
         run: |
           set -euxo pipefail
-          # Bootstrap the CachyOS keyring + mirrorlist from official packages.
           pacman-key --init
           curl -fsSL https://mirror.cachyos.org/cachyos-repo.tar.xz -o /tmp/cachyos-repo.tar.xz
           tar xf /tmp/cachyos-repo.tar.xz -C /tmp
-          cd /tmp/cachyos-repo
-          # The installer script appends repos to /etc/pacman.conf and
-          # imports keys; run it non-interactively.
-          ./cachyos-repo.sh || true
-          pacman -Sy --noconfirm
+          # Run the official installer; do NOT mask failures this time.
+          (cd /tmp/cachyos-repo && ./cachyos-repo.sh --install)
+          pacman -Sy
+
+      - name: Enable Chaotic-AUR (for calamares)
+        run: |
+          set -euxo pipefail
+          pacman-key --recv-key 3056513887B78AEB --keyserver keyserver.ubuntu.com
+          pacman-key --lsign-key 3056513887B78AEB
+          pacman -U --noconfirm \
+            'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst' \
+            'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst'
+          if ! grep -q '\[chaotic-aur\]' /etc/pacman.conf; then
+            printf '\n[chaotic-aur]\nInclude = /etc/pacman.d/chaotic-mirrorlist\n' >> /etc/pacman.conf
+          fi
+          pacman -Sy
 
       - name: Check every ISO package resolves
         run: |
           set -uo pipefail
-          # Strip comments/blanks from the package list, then ask pacman to
-          # locate each in the sync DBs. Collect the ones that don't resolve.
           missing=()
           while read -r pkg; do
             [ -z "$pkg" ] && continue
@@ -59,7 +66,7 @@ jobs:
             printf '  - %s\n' "${missing[@]}"
             exit 1
           fi
-          echo "✓ All $(grep -vcE '^\s*#|^\s*$' iso/packages.x86_64) packages resolve"
+          echo "✓ All packages resolve"
 
   build-iso:
     name: Build ISO with mkarchiso
@@ -71,19 +78,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install archiso + enable CachyOS
+      - name: Install archiso + repos
         run: |
           set -euxo pipefail
-          pacman -Syu --noconfirm archiso git curl
+          pacman -Syu --noconfirm archiso git curl sed grep
+          pacman-key --init
           curl -fsSL https://mirror.cachyos.org/cachyos-repo.tar.xz -o /tmp/cachyos-repo.tar.xz
           tar xf /tmp/cachyos-repo.tar.xz -C /tmp
-          (cd /tmp/cachyos-repo && ./cachyos-repo.sh || true)
-          pacman -Sy --noconfirm
+          (cd /tmp/cachyos-repo && ./cachyos-repo.sh --install)
+          pacman-key --recv-key 3056513887B78AEB --keyserver keyserver.ubuntu.com
+          pacman-key --lsign-key 3056513887B78AEB
+          pacman -U --noconfirm \
+            'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst' \
+            'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst'
+          if ! grep -q '\[chaotic-aur\]' /etc/pacman.conf; then
+            printf '\n[chaotic-aur]\nInclude = /etc/pacman.d/chaotic-mirrorlist\n' >> /etc/pacman.conf
+          fi
+          pacman -Sy
 
       - name: Build ISO
-        run: |
-          set -euxo pipefail
-          mkarchiso -v -w /tmp/work -o /tmp/out iso/
+        run: mkarchiso -v -w /tmp/work -o /tmp/out iso/
 
       - name: Report artifact
         run: |

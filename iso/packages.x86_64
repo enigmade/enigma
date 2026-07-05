@@ -6,15 +6,13 @@ base
 linux-cachyos
 linux-lts
 linux-firmware
-linux-firmware-nonfree
 
 # CachyOS base
 cachyos-keyring
 cachyos-mirrorlist
 
-# Init & boot (systemd-boot + GRUB fallback per SPEC §1)
+# Init & boot (systemd-boot ships inside systemd; GRUB fallback per SPEC §1)
 systemd
-systemd-boot
 grub
 
 # Filesystem & storage
@@ -42,11 +40,12 @@ tmux
 which
 
 # Desktop (KDE Plasma 6 Wayland, stripped per SPEC §3)
+# plasma-workspace provides the Wayland session; kirigami/syntax-highlighting
+# are the KF6 packages (unprefixed in Arch's repos).
 plasma-desktop
 plasma-workspace
-plasma-wayland-session
-kf6-kirigami
-kf6-syntax-highlighting
+kirigami
+syntax-highlighting
 
 # KDE minimal base
 dolphin
@@ -88,10 +87,8 @@ apparmor
 tlp
 tlp-rdw
 
-# Device management
-udev
+# Device management (udev ships inside systemd)
 udisks2
-udisks2-qt
 
 # Docker / container support (minimal, Phase 7 extends)
 podman
@@ -104,9 +101,8 @@ lshw
 pciutils
 usbutils
 
-# Installer & first-boot (Phase 2)
+# Installer & first-boot (Phase 2) — calamares comes from Chaotic-AUR
 calamares
-calamares-ui-qt
 mkinitcpio-archiso
 mkinitcpio
 
