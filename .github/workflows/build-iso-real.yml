@@ -32,8 +32,13 @@ jobs:
           pacman-key --init
           curl -fsSL https://mirror.cachyos.org/cachyos-repo.tar.xz -o /tmp/cachyos-repo.tar.xz
           tar xf /tmp/cachyos-repo.tar.xz -C /tmp
-          # Run the official installer; do NOT mask failures this time.
-          (cd /tmp/cachyos-repo && ./cachyos-repo.sh --install)
+          # Run the official installer non-interactively. pipefail is off for
+          # this pipe so `yes` dying via SIGPIPE doesn't mask the real exit.
+          set +o pipefail
+          yes | (cd /tmp/cachyos-repo && ./cachyos-repo.sh --install)
+          rc=$?
+          set -o pipefail
+          [ $rc -eq 0 ]
           pacman -Sy
 
       - name: Enable Chaotic-AUR (for calamares)
@@ -85,7 +90,11 @@ jobs:
           pacman-key --init
           curl -fsSL https://mirror.cachyos.org/cachyos-repo.tar.xz -o /tmp/cachyos-repo.tar.xz
           tar xf /tmp/cachyos-repo.tar.xz -C /tmp
-          (cd /tmp/cachyos-repo && ./cachyos-repo.sh --install)
+          set +o pipefail
+          yes | (cd /tmp/cachyos-repo && ./cachyos-repo.sh --install)
+          rc=$?
+          set -o pipefail
+          [ $rc -eq 0 ]
           pacman-key --recv-key 3056513887B78AEB --keyserver keyserver.ubuntu.com
           pacman-key --lsign-key 3056513887B78AEB
           pacman -U --noconfirm \
