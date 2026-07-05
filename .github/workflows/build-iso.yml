@@ -12,13 +12,16 @@ jobs:
   build-iso:
     runs-on: ubuntu-latest
     container:
-      image: archlinux:latest
+      image: archlinux:base-devel
     outputs:
       iso-path: ${{ env.ISO_PATH }}
     steps:
+      - name: Initialize pacman
+        run: pacman -Sy --noconfirm
+
       - name: Install build dependencies
         run: |
-          pacman -Sy --noconfirm archiso git shellcheck qemu edk2-ovmf
+          pacman -S --noconfirm archiso git shellcheck qemu edk2-ovmf
 
       - name: Checkout
         uses: actions/checkout@v4
