@@ -1,0 +1,12 @@
+[Unit]
+Description=Enigma OS Hardware Detection
+Documentation=file:///usr/share/doc/enigma/hwdetect.md
+Before=multi-user.target
+ConditionVirtualization=!container
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/enigma-hwdetect detect
+RemainAfterExit=yes
+StandardOutput=journal
+StandardError=journal

@@ -1,0 +1,9 @@
+[Unit]
+Description=Enigma AI Workload Slice
+Documentation=man:systemd.slice(5) man:systemd.resource-control(5)
+
+[Slice]
+# Per SPEC §19a: CPUWeight=40 so AI inference doesn't starve interactive session
+CPUWeight=40
+# Lower I/O weight to prevent disk I/O saturation during model inference
+IOWeight=10
