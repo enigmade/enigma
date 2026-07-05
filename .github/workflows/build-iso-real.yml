@@ -68,7 +68,12 @@ jobs:
 
           if [ ${#missing[@]} -gt 0 ]; then
             echo "::error::Unresolvable packages: ${missing[*]}"
-            printf '  - %s\n' "${missing[@]}"
+            for pkg in "${missing[@]}"; do
+              echo "--- candidates for '$pkg' ---"
+              pacman -Ss "$pkg" 2>/dev/null | head -20 || echo "(no matches)"
+            done
+            echo "--- repos with a calamares match ---"
+            pacman -Sl chaotic-aur 2>/dev/null | grep -i calamares || echo "(none in chaotic-aur)"
             exit 1
           fi
           echo "✓ All packages resolve"
