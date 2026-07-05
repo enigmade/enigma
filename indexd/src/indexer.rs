@@ -94,6 +94,9 @@ impl SearchIndex {
 
     pub fn commit(&mut self) -> tantivy::Result<()> {
         self.writer.commit()?;
+        // RAMDirectory doesn't fire filesystem watch events, so OnCommit's
+        // automatic reload never triggers; reload explicitly instead.
+        self.reader.reload()?;
         Ok(())
     }
 
