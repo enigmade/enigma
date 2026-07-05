@@ -29,17 +29,23 @@ jobs:
       - name: Enable CachyOS repositories
         run: |
           set -euxo pipefail
+          # Retry helper: CachyOS mirrors occasionally reset the connection.
+          retry() { for i in 1 2 3 4 5; do "$@" && return 0; echo "attempt $i failed, retrying in 10s"; sleep 10; done; return 1; }
+
           pacman-key --init
-          curl -fsSL https://mirror.cachyos.org/cachyos-repo.tar.xz -o /tmp/cachyos-repo.tar.xz
+          retry curl -fsSL https://mirror.cachyos.org/cachyos-repo.tar.xz -o /tmp/cachyos-repo.tar.xz
           tar xf /tmp/cachyos-repo.tar.xz -C /tmp
-          # Run the official installer non-interactively. pipefail is off for
-          # this pipe so `yes` dying via SIGPIPE doesn't mask the real exit.
-          set +o pipefail
-          yes | (cd /tmp/cachyos-repo && ./cachyos-repo.sh --install)
-          rc=$?
-          set -o pipefail
-          [ $rc -eq 0 ]
-          pacman -Sy
+          # Run the official installer non-interactively, with retries. pipefail
+          # is off for the pipe so `yes` dying via SIGPIPE doesn't mask the exit.
+          install_cachyos() {
+            set +o pipefail
+            yes | (cd /tmp/cachyos-repo && ./cachyos-repo.sh --install)
+            local rc=$?
+            set -o pipefail
+            return $rc
+          }
+          retry install_cachyos
+          retry pacman -Sy
 
       - name: Check every ISO package resolves
         run: |
@@ -76,16 +82,21 @@ jobs:
       - name: Install archiso + repos
         run: |
           set -euxo pipefail
-          pacman -Syu --noconfirm archiso git curl sed grep
+          retry() { for i in 1 2 3 4 5; do "$@" && return 0; echo "attempt $i failed, retrying in 10s"; sleep 10; done; return 1; }
+
+          retry pacman -Syu --noconfirm archiso git curl sed grep
           pacman-key --init
-          curl -fsSL https://mirror.cachyos.org/cachyos-repo.tar.xz -o /tmp/cachyos-repo.tar.xz
+          retry curl -fsSL https://mirror.cachyos.org/cachyos-repo.tar.xz -o /tmp/cachyos-repo.tar.xz
           tar xf /tmp/cachyos-repo.tar.xz -C /tmp
-          set +o pipefail
-          yes | (cd /tmp/cachyos-repo && ./cachyos-repo.sh --install)
-          rc=$?
-          set -o pipefail
-          [ $rc -eq 0 ]
-          pacman -Sy
+          install_cachyos() {
+            set +o pipefail
+            yes | (cd /tmp/cachyos-repo && ./cachyos-repo.sh --install)
+            local rc=$?
+            set -o pipefail
+            return $rc
+          }
+          retry install_cachyos
+          retry pacman -Sy
 
       - name: Build ISO
         run: mkarchiso -v -w /tmp/work -o /tmp/out iso/
