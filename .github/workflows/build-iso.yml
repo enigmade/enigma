@@ -87,18 +87,17 @@ jobs:
           echo "  - DaemonClient parses GET /v1/state into QML properties"
           echo "  - Headless test against mocked daemon (SPEC §18) passes"
 
-  build-iso-placeholder:
-    name: Phase 1-2 - ISO & Installer (Deferred)
+  iso-pointer:
+    name: Phase 1-2 - ISO & Installer (see ISO Build workflow)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
       - name: Phase 1-2 status
         run: |
-          echo "Phase 1-2 CI (Calamares + mkarchiso) requires archlinux container with complex setup"
-          echo "These are verified locally on Linux machines with archiso installed"
+          echo "Phase 1-2 (mkarchiso + cachyos-calamares) build in the dedicated"
+          echo "'ISO Build (Arch container)' workflow: .github/workflows/build-iso-real.yml"
           echo ""
-          echo "Phase 1 Gate: ISO builds and boots UEFI+BIOS, amnesic zero-write proven, Ventoy compatible"
-          echo "Phase 2 Gate: Calamares installer + Btrfs snapshots + rollback working"
+          echo "That workflow resolves the package list, runs mkarchiso in an Arch"
+          echo "container, verifies the ISO is hybrid-bootable (BIOS + UEFI El Torito),"
+          echo "and uploads the ~170MB enigma-*.iso artifact."
           echo ""
-          echo "Full CI setup deferred to when we have stable archlinux container base"
-          echo "Phase 3 Go tests (above) are running and passing ✓"
+          echo "It triggers on iso/** changes + manual dispatch (heavy: ~5 min)."
