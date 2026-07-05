@@ -39,19 +39,24 @@ void DaemonClient::refresh()
             setOnline(false);
             return;
         }
-        applyState(reply->readAll());
-        setOnline(true);
-        setError(QString());
+        // A malformed body means the daemon answered but we can't use it:
+        // keep the parse error set by applyState() and don't mark online.
+        if (applyState(reply->readAll())) {
+            setOnline(true);
+            setError(QString());
+        } else {
+            setOnline(false);
+        }
     });
 }
 
-void DaemonClient::applyState(const QByteArray &json)
+bool DaemonClient::applyState(const QByteArray &json)
 {
     QJsonParseError perr;
     const QJsonDocument doc = QJsonDocument::fromJson(json, &perr);
     if (perr.error != QJsonParseError::NoError || !doc.isObject()) {
         setError(QStringLiteral("invalid state JSON: %1").arg(perr.errorString()));
-        return;
+        return false;
     }
 
     const QJsonObject obj = doc.object();
@@ -62,6 +67,7 @@ void DaemonClient::applyState(const QByteArray &json)
     m_gpu = obj.value(QStringLiteral("gpu")).toObject().toVariantMap();
 
     emit stateChanged();
+    return true;
 }
 
 void DaemonClient::setOnline(bool online)

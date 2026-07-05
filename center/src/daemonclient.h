@@ -48,7 +48,7 @@ signals:
     void errorChanged();
 
 private:
-    void applyState(const QByteArray &json);
+    bool applyState(const QByteArray &json); // false on unparseable body
     void setOnline(bool online);
     void setError(const QString &err);
 
