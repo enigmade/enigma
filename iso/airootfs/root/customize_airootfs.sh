@@ -73,6 +73,31 @@ EOF
 echo "%wheel ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/enigma-live
 chmod 0440 /etc/sudoers.d/enigma-live
 
+# --- Live session setup: boot straight into the Plasma desktop -------------
+
+# Create the live user (auto-logged-in). Home is populated from /etc/skel,
+# which carries the Plasma defaults + the "Install Enigma OS" launcher.
+useradd -m -G wheel,network,video,audio,storage,power,rfkill -s /bin/bash enigma
+# Passwordless login for the live user (wheel already has NOPASSWD sudo).
+passwd -d enigma || true
+
+# Enable the essential services so the ISO reaches a usable desktop:
+#   - NetworkManager: networking in the live session + for the installer
+#   - sddm: the display manager that starts the Plasma Wayland session
+systemctl enable NetworkManager.service
+systemctl enable sddm.service
+# Default to the graphical target so sddm actually starts.
+systemctl set-default graphical.target
+
+# Console fallback: autologin root on tty1 (useful if the GPU has no KMS
+# driver and Plasma can't start — you still get a shell).
+mkdir -p /etc/systemd/system/getty@tty1.service.d/
+cat > /etc/systemd/system/getty@tty1.service.d/autologin.conf <<EOF
+[Service]
+ExecStart=
+ExecStart=-/usr/bin/agetty --autologin root --noclear %I \$TERM
+EOF
+
 # Clean package cache
 pacman -Sc --noconfirm || true
 

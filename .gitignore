@@ -36,3 +36,7 @@ venv/
 
 # Rust
 /indexd/target/
+
+# Enigma binaries built into the airootfs during the ISO CI build
+/iso/airootfs/usr/local/bin/enigma
+/iso/airootfs/usr/local/bin/enigma-hwdetect

@@ -1,0 +1,38 @@
+# Enigma OS branding for Calamares
+---
+identifier: enigmaos
+
+strings:
+  productName: Enigma OS
+  shortProductName: Enigma
+  version: 0.1.0
+  shortVersion: 0.1
+  versionedName: Enigma OS 0.1.0
+  shortVersionedName: Enigma 0.1
+  bootloaderEntryName: Enigma OS
+  productUrl: https://github.com/enigmade/enigma
+  supportUrl: https://github.com/enigmade/enigma/issues
+
+# Dark theme for Enigma branding.
+colors:
+  base: "#1a1a1a"
+  baseText: "#ffffff"
+  background: "#0d0d0d"
+  highlight: "#2e8b57"
+  highlightedText: "#ffffff"
+
+images:
+  productBanner: ""
+  productLogo: ""
+  productIcon: ""
+  productWallpaper: ""
+
+style:
+  sidebarBackground: "#0d0d0d"
+  sidebarText: "#ffffff"
+  sidebarTextSelect: "#2e8b57"
+
+# Slideshow disabled: a text-only install progress screen avoids shipping
+# QML that can't be validated here. Re-enable with a proper Calamares
+# slideshow (import calamares.slideshow 1.0; use Slide, not TextSlide).
+slideshow: ""

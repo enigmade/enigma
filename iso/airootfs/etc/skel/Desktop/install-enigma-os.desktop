@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Install Enigma OS
+Comment=Install Enigma OS to this computer
+Icon=calamares
+Exec=pkexec calamares
+Terminal=false
+Categories=System;

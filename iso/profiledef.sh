@@ -14,11 +14,11 @@ buildmodes=('iso')
 bootmodes=('bios.syslinux' 'uefi.systemd-boot')
 arch="x86_64"
 pacman_conf="pacman.conf"
-airootfs_image_type="erofs"
-# lz4hc level 12 compression with tail-packing + dedupe (all valid mkfs.erofs
-# extended options). The previous -Ezcache-raid-stripe-width flag does not
-# exist and made mkfs.erofs fail with "Invalid argument".
-airootfs_image_tool_options=('-zlz4hc,12' '-Eztailpacking,dedupe')
+# squashfs (zstd) for the root image: Calamares' unpackfs module is built
+# around squashfs (unsquashfs), so this maximizes installer reliability on
+# real hardware vs. erofs.
+airootfs_image_type="squashfs"
+airootfs_image_tool_options=('-comp' 'zstd' '-Xcompression-level' '15' '-b' '1M')
 file_permissions=(
   ["/root/.automated_script.sh"]="0755"
   ["/root/.customize_airootfs.sh"]="0755"

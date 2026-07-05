@@ -98,6 +98,20 @@ jobs:
           retry install_cachyos
           retry pacman -Sy
 
+      - name: Build Enigma binaries into airootfs
+        run: |
+          set -euxo pipefail
+          retry() { for i in 1 2 3; do "$@" && return 0; sleep 5; done; return 1; }
+          retry pacman -S --noconfirm go
+          mkdir -p iso/airootfs/usr/local/bin
+          # Native linux/amd64 build of the enigma CLI + hwdetect (go.work ties
+          # the two modules together), placed on the ISO at /usr/local/bin.
+          go build -o iso/airootfs/usr/local/bin/enigma ./cli/cmd/enigma
+          go build -o iso/airootfs/usr/local/bin/enigma-hwdetect ./hwdetect/cmd/enigma-hwdetect
+          chmod +x iso/airootfs/usr/local/bin/enigma iso/airootfs/usr/local/bin/enigma-hwdetect
+          ./iso/airootfs/usr/local/bin/enigma-hwdetect --help >/dev/null 2>&1 || true
+          echo "✓ enigma + enigma-hwdetect built into airootfs"
+
       - name: Build ISO
         run: mkarchiso -v -w /tmp/work -o /tmp/out iso/
 

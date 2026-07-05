@@ -1,0 +1,10 @@
+/* Enigma OS live session: let the live user launch the Calamares installer
+ * via pkexec without a password prompt (there is no password in live mode).
+ * This rule is only shipped on the live ISO, not on the installed system. */
+polkit.addRule(function(action, subject) {
+    if ((action.id == "org.freedesktop.policykit.exec" ||
+         action.id.indexOf("calamares") !== -1) &&
+        subject.isInGroup("wheel")) {
+        return polkit.Result.YES;
+    }
+});
