@@ -70,8 +70,28 @@ Phases:
 	case "clean":
 		fmt.Println("✓ Clean command stubbed — nothing to clean yet")
 
-	case "ai", "game", "win", "containers":
-		fmt.Printf("⏳ `enigma %s` coming in Phase 5/7\n", args[0])
+	case "ai":
+		if len(args) < 2 {
+			fmt.Fprintf(os.Stderr, "Usage: enigma ai [setup|ollama|comfy|run]\n")
+			os.Exit(1)
+		}
+		switch args[1] {
+		case "setup":
+			fmt.Println("enigma ai setup: Install matching PyTorch for detected GPU")
+			fmt.Println("  TODO Phase 5.5: wire full implementation")
+		case "ollama":
+			fmt.Println("enigma ai ollama: Manage Ollama LLM service")
+		case "comfy":
+			fmt.Println("enigma ai comfy: Manage ComfyUI image generation")
+		case "run":
+			fmt.Println("enigma ai run: Run Pinokio JSON scripts")
+		default:
+			fmt.Fprintf(os.Stderr, "Unknown ai command: %s\n", args[1])
+			os.Exit(1)
+		}
+
+	case "game", "win", "containers":
+		fmt.Printf("⏳ `enigma %s` coming in Phase 7/8\n", args[0])
 
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", args[0])
