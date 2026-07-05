@@ -45,7 +45,12 @@ jobs:
             return $rc
           }
           retry install_cachyos
-          retry pacman -Sy
+          # The x86-64-v4 repos sometimes ship a db with a signature the shipped
+          # keyring can't verify. We only use v3 + baseline cachyos (v3 runs on
+          # any v4 CPU), so drop the v4 repo stanzas and refresh the keyring.
+          sed -i '/^\[cachyos.*-v4\]/,+1d' /etc/pacman.conf
+          pacman-key --populate cachyos
+          retry pacman -Syy
 
       - name: Check every ISO package resolves
         run: |
@@ -96,7 +101,11 @@ jobs:
             return $rc
           }
           retry install_cachyos
-          retry pacman -Sy
+          # Drop the v4 repos (occasionally-broken db signature); v3 + baseline
+          # cover us and run on any v4 CPU. Refresh the keyring + dbs.
+          sed -i '/^\[cachyos.*-v4\]/,+1d' /etc/pacman.conf
+          pacman-key --populate cachyos
+          retry pacman -Syy
 
       - name: Build Enigma binaries into airootfs
         run: |
