@@ -89,6 +89,12 @@ systemctl enable sddm.service
 # Default to the graphical target so sddm actually starts.
 systemctl set-default graphical.target
 
+# Auto-detect GPU/AI hardware on first boot (writes /etc/enigma/hardware.toml).
+# Only present if the enigma-hwdetect binary was built into the airootfs.
+if [ -x /usr/local/bin/enigma-hwdetect ]; then
+  systemctl enable enigma-hwdetect.service || true
+fi
+
 # Override cachyos-calamares's config with the Enigma installer config.
 # Staged under /usr/share/enigma so it doesn't collide with the package's
 # files during pacstrap (this script runs after packages are installed).

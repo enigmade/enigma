@@ -1,0 +1,15 @@
+[Unit]
+Description=Enigma OS hardware detection (GPU/AI tiering)
+# Only run once, until /etc/enigma/hardware.toml exists (SPEC §2/§3).
+ConditionPathExists=!/etc/enigma/hardware.toml
+After=systemd-udev-settle.service
+Wants=systemd-udev-settle.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStartPre=/usr/bin/mkdir -p /etc/enigma
+ExecStart=/usr/local/bin/enigma-hwdetect detect
+
+[Install]
+WantedBy=multi-user.target
