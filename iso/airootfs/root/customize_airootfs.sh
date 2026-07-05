@@ -89,6 +89,13 @@ systemctl enable sddm.service
 # Default to the graphical target so sddm actually starts.
 systemctl set-default graphical.target
 
+# Override cachyos-calamares's config with the Enigma installer config.
+# Staged under /usr/share/enigma so it doesn't collide with the package's
+# files during pacstrap (this script runs after packages are installed).
+if [ -d /usr/share/enigma/calamares ]; then
+  cp -rT /usr/share/enigma/calamares /etc/calamares
+fi
+
 # Console fallback: autologin root on tty1 (useful if the GPU has no KMS
 # driver and Plasma can't start — you still get a shell).
 mkdir -p /etc/systemd/system/getty@tty1.service.d/
