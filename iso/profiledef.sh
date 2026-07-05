@@ -8,7 +8,9 @@ iso_application="Enigma OS Live ISO"
 iso_version="0.1.0"
 install_dir="arch"
 buildmodes=('iso')
-bootmodes=('uefi' 'bios')
+# Modern archiso bootmode identifiers. UEFI via systemd-boot (efiboot/loader);
+# BIOS via syslinux is added once the syslinux/ configs are in place.
+bootmodes=('uefi-x64.systemd-boot.esp' 'uefi-x64.systemd-boot.eltorito')
 arch="x86_64"
 pacman_conf="pacman.conf"
 airootfs_image_type="erofs"
