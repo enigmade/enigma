@@ -1,0 +1,34 @@
+# Enigma OS snapper configuration for root filesystem (@)
+# Per SPEC §1 & §7: snapshots before every update, boot rollback
+
+SUBVOLUME="/"
+FSTYPE="btrfs"
+
+# Timeline snapshots (daily, hourly, monthly, yearly)
+TIMELINE_CREATE="yes"
+TIMELINE_CLEANUP="yes"
+TIMELINE_LIMIT_HOURLY="10"
+TIMELINE_LIMIT_DAILY="7"
+TIMELINE_LIMIT_WEEKLY="0"
+TIMELINE_LIMIT_MONTHLY="12"
+TIMELINE_LIMIT_YEARLY="3"
+
+# Cleanup algorithm: number (keep N oldest), timeline, empty-pre-post
+TIMELINE_CLEANUP_ALGORITHM="number"
+
+# Pre/post snapshots for pacman (via snap-pac)
+NUMBER_CLEANUP="yes"
+NUMBER_LIMIT="50"
+NUMBER_LIMIT_IMPORTANT="10"
+
+# Snapshots are read-only by default
+ALLOW_USERS=""
+ALLOW_GROUPS=""
+
+# Snapshot directory (used by grub-btrfs and custom systemd-boot hook)
+SNAPSHOT_ROOT_PREFIX=".snapshots"
+
+# Background snapshots (can be disabled if needed)
+BACKGROUND_COMPARISON="yes"
+
+# Per SPEC §7: snapshots are shown in boot menu (via grub-btrfs + custom hook)

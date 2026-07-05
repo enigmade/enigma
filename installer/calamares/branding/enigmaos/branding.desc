@@ -1,0 +1,35 @@
+# Enigma OS branding for Calamares
+
+---
+# Branding identifier (must match subdirectory name)
+identifier: enigmaos
+
+# Human-readable name
+strings:
+  productName: Enigma OS
+  shortProductName: Enigma
+  version: 0.1.0
+  shortVersion: 0.1
+  versionedName: Enigma OS 0.1.0
+  shortVersionedName: Enigma 0.1
+  bootloaderEntryName: Enigma OS
+
+# Color scheme (dark theme for Enigma branding)
+colors:
+  base: "#1a1a1a"
+  baseText: "#ffffff"
+  background: "#0d0d0d"
+  highlight: "#2e8b57"
+  highlightedText: "#ffffff"
+
+# Images (paths relative to branding dir)
+images:
+  productBanner: ""
+  productLogo: ""
+  productIcon: ""
+  productWallpaper: ""
+
+# Slideshow during installation
+slideshow:
+  enabled: true
+  path: show.qml

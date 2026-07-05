@@ -103,3 +103,20 @@ lsb-release
 lshw
 pciutils
 usbutils
+
+# Installer & first-boot (Phase 2)
+calamares
+calamares-ui-qt
+mkinitcpio-archiso
+mkinitcpio
+
+# Btrfs snapshots & rollback (Phase 2, SPEC §7)
+snapper
+snap-pac
+grub-btrfs
+os-prober
+
+# Additional utilities
+rsync
+gnupg
+openssh

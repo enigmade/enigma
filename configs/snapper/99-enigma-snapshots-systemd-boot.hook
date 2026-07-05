@@ -1,0 +1,9 @@
+[Trigger]
+Type = Command
+Target = snapper
+When = PostTransaction
+
+[Action]
+Description = Regenerate systemd-boot snapshot entries
+Depends = snapper
+Exec = /usr/local/libexec/enigma-generate-snapshot-entries.sh

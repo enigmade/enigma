@@ -76,4 +76,15 @@ chmod 0440 /etc/sudoers.d/enigma-live
 # Clean package cache
 pacman -Sc --noconfirm || true
 
-echo "Enigma OS customization complete"
+# Phase 2: Snapper + custom systemd-boot snapshot hook setup
+# Wire in the custom pacman hook for UEFI snapshot boot entries
+mkdir -p /etc/pacman.d/hooks/
+cp /usr/share/enigma/hooks/99-enigma-snapshots-systemd-boot.hook /etc/pacman.d/hooks/ || true
+cp /usr/local/libexec/enigma-generate-snapshot-entries.sh /usr/local/libexec/ 2>/dev/null || true
+
+# Initialize snapper for root filesystem (will be created post-install)
+# Live mode doesn't use snapshots, but the config exists for installer
+mkdir -p /etc/snapper/
+: > /etc/snapper/configs/root || true
+
+echo "Enigma OS customization complete (Phase 1 + 2)"
