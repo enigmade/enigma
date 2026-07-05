@@ -1,0 +1,10 @@
+// Enigma OS polkit rules: block udisks auto-mount of internal disks in live mode
+// Ensures amnesic ≠ accidental writes to internal storage (SPEC §20.6)
+
+polkit.addRule(function(action, subject) {
+    if (action.id.indexOf("org.freedesktop.udisks2.filesystem-mount") == 0) {
+        // In live mode, require explicit authorization (will prompt user)
+        // This prevents accidental internal disk mounts
+        return polkit.Result.AUTH_REQUIRED;
+    }
+});

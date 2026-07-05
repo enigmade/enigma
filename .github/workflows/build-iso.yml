@@ -1,0 +1,91 @@
+name: Build Enigma OS ISO
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-iso:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+    steps:
+      - name: Install build dependencies
+        run: |
+          pacman -Sy --noconfirm archiso git shellcheck qemu-system-x86-64 edk2-ovmf
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Lint shell scripts (shellcheck)
+        run: |
+          echo "Checking archiso customization hook..."
+          shellcheck -x iso/airootfs/root/customize_airootfs.sh
+
+          echo "Checking CI QEMU scripts..."
+          for script in ci/qemu/*.sh; do
+            echo "  Checking $script"
+            shellcheck -x "$script"
+          done
+
+      - name: Build ISO
+        run: |
+          cd iso
+          mkarchiso -v -w /tmp/work -o /tmp/out .
+
+      - name: Verify ISO was created
+        run: |
+          if [ ! -f /tmp/out/enigma-*.iso ]; then
+            echo "ERROR: ISO not found in /tmp/out/"
+            ls -la /tmp/out/
+            exit 1
+          fi
+          ISO_PATH=$(ls /tmp/out/enigma-*.iso | head -1)
+          echo "ISO_PATH=$ISO_PATH" >> "$GITHUB_ENV"
+          echo "ISO created: $ISO_PATH"
+          ls -lh "$ISO_PATH"
+
+      - name: Test boot UEFI
+        run: |
+          bash ci/qemu/boot-uefi.sh "${{ env.ISO_PATH }}" /tmp
+
+      - name: Test boot BIOS
+        run: |
+          bash ci/qemu/boot-bios.sh "${{ env.ISO_PATH }}" /tmp
+
+      - name: Test amnesic mode (zero-write guarantee)
+        run: |
+          bash ci/qemu/test-amnesic.sh "${{ env.ISO_PATH }}" /tmp
+
+      - name: Test copytoram mode
+        run: |
+          bash ci/qemu/test-copytoram.sh "${{ env.ISO_PATH }}" /tmp
+
+      - name: Test Ventoy compatibility
+        run: |
+          bash ci/qemu/test-ventoy.sh "${{ env.ISO_PATH }}" /tmp
+
+      - name: Upload ISO artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: enigma-os-iso
+          path: /tmp/out/enigma-*.iso
+          if-no-files-found: error
+
+      - name: Archive boot times
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qemu-logs
+          path: /tmp/qemu-serial-*.log
+          if-no-files-found: ignore
+
+      - name: Print success message
+        if: success()
+        run: |
+          echo "✓ Phase 1 gate PASSED: ISO builds and boots UEFI+BIOS, amnesic verified, Ventoy compatible"

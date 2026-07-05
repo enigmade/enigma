@@ -1,0 +1,105 @@
+# Enigma OS minimal live package list
+# Per SPEC §3 (stripped KDE Plasma), §1 (CachyOS base), §2 (GPU/drivers deferred to Phase 3)
+
+# Base system
+base
+linux-cachyos
+linux-lts
+linux-firmware
+linux-firmware-nonfree
+
+# CachyOS base
+cachyos-keyring
+cachyos-mirrorlist
+
+# Init & boot (systemd-boot + GRUB fallback per SPEC §1)
+systemd
+systemd-boot
+grub
+
+# Filesystem & storage
+btrfs-progs
+parted
+gptfdisk
+partclone
+
+# Networking
+networkmanager
+wpa_supplicant
+dhclient
+
+# Shell & utilities
+bash
+zsh
+sudo
+vim
+nano
+git
+curl
+wget
+htop
+tmux
+which
+
+# Desktop (KDE Plasma 6 Wayland, stripped per SPEC §3)
+plasma-desktop
+plasma-workspace
+plasma-wayland-session
+kf6-kirigami
+kf6-syntax-highlighting
+
+# KDE minimal base
+dolphin
+konsole
+kate
+gwenview
+vlc
+
+# Audio & media
+pipewire
+pipewire-alsa
+pipewire-jack
+wireplumber
+
+# Display manager
+sddm
+sddm-kcm
+
+# Common dev tools
+base-devel
+gcc
+make
+cmake
+pkgconf
+
+# Fonts per SPEC §3
+adobe-source-code-pro-fonts
+inter-font
+ttf-jetbrains-mono-nerd
+noto-fonts
+noto-fonts-cjk
+noto-fonts-emoji
+
+# Security & firewall
+nftables
+apparmor
+
+# Power management
+tlp
+tlp-rdw
+
+# Device management
+udev
+udisks2
+udisks2-qt
+
+# Docker / container support (minimal, Phase 7 extends)
+podman
+podman-docker
+
+# Miscellaneous
+efibootmgr
+lsb-release
+lshw
+pciutils
+usbutils

@@ -1,0 +1,35 @@
+# Enigma OS build artifacts and temporary files
+
+# archiso output
+/out/
+/work/
+
+# ISO images and disk images
+*.iso
+*.img
+*.qcow2
+*.raw
+*.backup
+
+# QEMU temporary files
+qemu-serial-*.log
+qemu-*.pid
+
+# Temporary build files
+/tmp/
+*.swp
+*.swo
+*~
+.DS_Store
+.vscode/
+.idea/
+
+# Python / virtualenv
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+
+# Build artifacts from CI
+*.log
