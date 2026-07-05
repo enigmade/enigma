@@ -1,0 +1,99 @@
+name: ISO Build (Arch container)
+
+# Phases 1-2 gate: build the real Enigma OS ISO in an Arch Linux container.
+# Runs separately from the main test workflow because it is heavy (GBs of
+# downloads, tens of minutes). A fast package-resolution job gates the
+# expensive mkarchiso build so bad package names fail in ~2 min, not ~30.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'iso/**'
+      - '.github/workflows/build-iso-real.yml'
+  workflow_dispatch:
+
+jobs:
+  resolve-packages:
+    name: Validate package list resolves
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Refresh base + install tooling
+        run: |
+          pacman -Syu --noconfirm archiso git curl
+
+      - name: Enable CachyOS repositories
+        run: |
+          set -euxo pipefail
+          # Bootstrap the CachyOS keyring + mirrorlist from official packages.
+          pacman-key --init
+          curl -fsSL https://mirror.cachyos.org/cachyos-repo.tar.xz -o /tmp/cachyos-repo.tar.xz
+          tar xf /tmp/cachyos-repo.tar.xz -C /tmp
+          cd /tmp/cachyos-repo
+          # The installer script appends repos to /etc/pacman.conf and
+          # imports keys; run it non-interactively.
+          ./cachyos-repo.sh || true
+          pacman -Sy --noconfirm
+
+      - name: Check every ISO package resolves
+        run: |
+          set -uo pipefail
+          # Strip comments/blanks from the package list, then ask pacman to
+          # locate each in the sync DBs. Collect the ones that don't resolve.
+          missing=()
+          while read -r pkg; do
+            [ -z "$pkg" ] && continue
+            case "$pkg" in \#*) continue;; esac
+            if ! pacman -Si "$pkg" >/dev/null 2>&1; then
+              missing+=("$pkg")
+            fi
+          done < <(grep -vE '^\s*#' iso/packages.x86_64 | sed 's/#.*//' | tr -d ' \t' | grep -v '^$')
+
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::Unresolvable packages: ${missing[*]}"
+            printf '  - %s\n' "${missing[@]}"
+            exit 1
+          fi
+          echo "✓ All $(grep -vcE '^\s*#|^\s*$' iso/packages.x86_64) packages resolve"
+
+  build-iso:
+    name: Build ISO with mkarchiso
+    needs: resolve-packages
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install archiso + enable CachyOS
+        run: |
+          set -euxo pipefail
+          pacman -Syu --noconfirm archiso git curl
+          curl -fsSL https://mirror.cachyos.org/cachyos-repo.tar.xz -o /tmp/cachyos-repo.tar.xz
+          tar xf /tmp/cachyos-repo.tar.xz -C /tmp
+          (cd /tmp/cachyos-repo && ./cachyos-repo.sh || true)
+          pacman -Sy --noconfirm
+
+      - name: Build ISO
+        run: |
+          set -euxo pipefail
+          mkarchiso -v -w /tmp/work -o /tmp/out iso/
+
+      - name: Report artifact
+        run: |
+          ls -lh /tmp/out/
+          echo "✓ Phase 1 gate: ISO built successfully"
+
+      - name: Upload ISO
+        uses: actions/upload-artifact@v4
+        with:
+          name: enigma-iso
+          path: /tmp/out/*.iso
+          retention-days: 7
+          if-no-files-found: error
