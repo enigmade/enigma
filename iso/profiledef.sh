@@ -8,14 +8,10 @@ iso_application="Enigma OS Live ISO"
 iso_version="0.1.0"
 install_dir="arch"
 buildmodes=('iso')
-# Modern archiso bootmode identifiers. UEFI via systemd-boot (efiboot/loader);
-# BIOS via syslinux (syslinux/syslinux.cfg). Covers SPEC §1 UEFI+BIOS matrix.
-bootmodes=(
-  'bios.syslinux.mbr'
-  'bios.syslinux.eltorito'
-  'uefi-x64.systemd-boot.esp'
-  'uefi-x64.systemd-boot.eltorito'
-)
+# Consolidated archiso bootmode identifiers (non-deprecated in current
+# archiso). bios.syslinux covers MBR + El Torito; uefi.systemd-boot covers
+# ESP + El Torito. Together they satisfy the SPEC §1 UEFI+BIOS matrix.
+bootmodes=('bios.syslinux' 'uefi.systemd-boot')
 arch="x86_64"
 pacman_conf="pacman.conf"
 airootfs_image_type="erofs"
