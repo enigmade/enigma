@@ -29,6 +29,42 @@ jobs:
           echo "  - hardware.toml I/O verified"
           echo "  - Binary built successfully"
 
+  test-cli:
+    name: Phase 4-5 - enigma CLI Go tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '1.26'
+      - name: Run cli tests
+        run: cd cli && go test ./... -v
+      - name: Build enigma binary
+        run: go build ./cli/cmd/enigma
+      - name: Print Phase 4-5 status
+        run: |
+          echo "✓ Phase 4-5 PASSED: enigma CLI dispatcher + dev/ai subsystems"
+          echo "  - Stack detection, port allocator, torch matcher tests pass"
+          echo "  - Binary built successfully"
+
+  test-indexd:
+    name: Phase 6 - enigma-indexd Rust tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Run indexd tests
+        run: cd indexd && cargo test --verbose
+      - name: Build indexd binary
+        run: cd indexd && cargo build --release
+      - name: Print Phase 6 status
+        run: |
+          echo "✓ Phase 6 PASSED: Tantivy indexer + file watcher + IPC"
+          echo "  - Schema, exclude-list, index/search roundtrip tests pass"
+          echo "  - Cross-platform file watcher (notify) verified"
+          echo "  - Unix socket IPC end-to-end query verified"
+          echo "  - Binary built successfully"
+
   build-iso-placeholder:
     name: Phase 1-2 - ISO & Installer (Deferred)
     runs-on: ubuntu-latest

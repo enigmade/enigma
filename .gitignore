@@ -33,3 +33,6 @@ venv/
 
 # Build artifacts from CI
 *.log
+
+# Rust
+/indexd/target/
