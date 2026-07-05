@@ -18,7 +18,7 @@ jobs:
     steps:
       - name: Install build dependencies
         run: |
-          pacman -Sy --noconfirm archiso git shellcheck qemu-system-x86-64 edk2-ovmf
+          pacman -Sy --noconfirm archiso git shellcheck qemu edk2-ovmf
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -108,7 +108,7 @@ jobs:
     steps:
       - name: Install runtime dependencies
         run: |
-          pacman -Sy --noconfirm qemu-system-x86-64 edk2-ovmf
+          pacman -Sy --noconfirm qemu edk2-ovmf
 
       - name: Checkout
         uses: actions/checkout@v4
