@@ -101,8 +101,8 @@ lshw
 pciutils
 usbutils
 
-# Installer & first-boot (Phase 2) — calamares comes from Chaotic-AUR
-calamares
+# Installer & first-boot (Phase 2) — CachyOS-branded Calamares
+cachyos-calamares
 mkinitcpio-archiso
 mkinitcpio
 
