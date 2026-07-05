@@ -14,13 +14,27 @@ import "fmt"
 //   - AI service ready: <30s (Ollama + torch imports)
 //   - GUI ready: <45s (KDE Plasma 6 login, dock visible)
 //   - Rollback: <5s (snapshot switch + reboot)
-func ValidateHardwareMatrix() error {
-	fmt.Println("TODO Phase 9: Real-hardware validation matrix")
-	fmt.Println("  - Boot speed: time from UEFI/BIOS POST to KDE Plasma login screen")
-	fmt.Println("  - GPU auto-detection: verify hwdetect accuracy on 10+ hardware configs")
-	fmt.Println("  - Service startup: Ollama + ComfyUI responsive within 30s")
-	fmt.Println("  - Rollback test: snapshot → switch → reboot → verify boot speed unchanged")
-	fmt.Println("  - Wine Tier 1: run legacy .exe (Notepad++, 7-Zip) on Wine staging")
-	fmt.Println("  - Steam game: boot Proton game, verify GPU utilization + FPS")
+// ValidateHardwareMatrix evaluates a run's benchmark output against the
+// SPEC §9 thresholds and reports pass/fail. benchmarkOutput is the
+// "metric=seconds" text produced by the on-device measurement harness.
+// Returns an error if any metric exceeded its threshold, so this can gate
+// a release in CI or a smoke-test script.
+func ValidateHardwareMatrix(benchmarkOutput string) error {
+	results, err := ParseBenchmarks(benchmarkOutput)
+	if err != nil {
+		return err
+	}
+
+	for _, r := range results {
+		status := "PASS"
+		if !r.Pass {
+			status = "FAIL"
+		}
+		fmt.Printf("  [%s] %-14s %.1fs (threshold %.1fs)\n", status, r.Name, r.ValueSec, r.Threshold)
+	}
+
+	if !AllPass(results) {
+		return fmt.Errorf("benchmark failures: %v", Failures(results))
+	}
 	return nil
 }
