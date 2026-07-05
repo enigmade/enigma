@@ -90,8 +90,28 @@ Phases:
 			os.Exit(1)
 		}
 
-	case "game", "win", "containers":
-		fmt.Printf("⏳ `enigma %s` coming in Phase 7/8\n", args[0])
+	case "game":
+		if len(args) < 2 {
+			fmt.Println("enigma game: Gaming setup (Phase 7)")
+			fmt.Println("  Subcommands: setup, extras")
+			return
+		}
+		fmt.Printf("⏳ Phase 7: `enigma game %s`\n", args[1])
+
+	case "win":
+		if len(args) < 2 {
+			fmt.Println("enigma win: Windows app support (Phase 7-8)")
+			fmt.Println("  Subcommands: setup-vm, run, apps")
+			return
+		}
+		fmt.Printf("⏳ Phase 7-8: `enigma win %s`\n", args[1])
+
+	case "containers":
+		if len(args) < 2 {
+			fmt.Println("enigma containers: Podman management (Phase 7)")
+			return
+		}
+		fmt.Printf("⏳ Phase 7: `enigma containers %s`\n", args[1])
 
 	default:
 		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", args[0])
