@@ -65,6 +65,28 @@ jobs:
           echo "  - Unix socket IPC end-to-end query verified"
           echo "  - Binary built successfully"
 
+  test-center:
+    name: Phase 7.5 - Enigma Center (headless daemon-client test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Qt6 (base + network + test)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qt6-base-dev cmake ninja-build
+      - name: Configure + build DaemonClient test
+        run: |
+          cd center/tests
+          cmake -S . -B build -G Ninja
+          cmake --build build
+      - name: Run headless test against mocked daemon
+        run: cd center/tests && ctest --test-dir build --output-on-failure
+      - name: Print Phase 7.5 status
+        run: |
+          echo "✓ Phase 7.5 PASSED: Enigma Center thin-client daemon API"
+          echo "  - DaemonClient parses GET /v1/state into QML properties"
+          echo "  - Headless test against mocked daemon (SPEC §18) passes"
+
   build-iso-placeholder:
     name: Phase 1-2 - ISO & Installer (Deferred)
     runs-on: ubuntu-latest
