@@ -18,7 +18,7 @@ PID_FILE=$(mktemp)
 echo "Testing BIOS boot from: $ISO"
 echo "Serial log: $SERIAL_LOG"
 
-trap "cleanup_qemu '$PID_FILE'" EXIT
+trap 'cleanup_qemu "$PID_FILE"' EXIT
 
 # Boot with SeaBIOS firmware
 "$QEMU_BIN" \

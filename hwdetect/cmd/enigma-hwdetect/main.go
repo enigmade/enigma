@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"enigma/hwdetect/internal/detect"
-	"enigma/hwdetect/internal/hardware"
+	"enigma/hwdetect/pkg/hardware"
 )
 
 func main() {

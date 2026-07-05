@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os/exec"
 
-	"enigma/hwdetect/internal/hardware"
+	"enigma/hwdetect/pkg/hardware"
 	"enigma/hwdetect/internal/lspci"
 )
 

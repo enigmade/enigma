@@ -20,7 +20,7 @@ PID_FILE=$(mktemp)
 OVMF_VARS_TMP=$(mktemp)
 cp "$OVMF_VARS" "$OVMF_VARS_TMP"
 
-trap "cleanup_qemu '$PID_FILE'; rm -f '$OVMF_VARS_TMP'" EXIT
+trap 'cleanup_qemu "$PID_FILE"; rm -f "$OVMF_VARS_TMP"' EXIT
 
 echo "Testing copytoram mode from: $ISO"
 echo "Serial log: $SERIAL_LOG"

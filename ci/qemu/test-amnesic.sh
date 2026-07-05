@@ -28,7 +28,7 @@ qemu-img convert -q -f qcow2 -O raw "$TEST_DISK" "$TEST_DISK_BACKUP"
 OVMF_VARS_TMP=$(mktemp)
 cp "$OVMF_VARS" "$OVMF_VARS_TMP"
 
-trap "cleanup_qemu '$PID_FILE'; rm -f '$OVMF_VARS_TMP' '$TEST_DISK' '$TEST_DISK_BACKUP'" EXIT
+trap 'cleanup_qemu "$PID_FILE"; rm -f "$OVMF_VARS_TMP" "$TEST_DISK" "$TEST_DISK_BACKUP"' EXIT
 
 echo "Testing amnesic mode from: $ISO"
 echo "Test disk: $TEST_DISK"
