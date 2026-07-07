@@ -152,10 +152,13 @@ jobs:
           grep -q 'hooks/archiso' /tmp/initrd-list.txt
           # USB keyboard/mouse must work on arbitrary hardware, so the image
           # must not have been trimmed by mkinitcpio's `autodetect` (which
-          # keys off the CI container's hardware). usbhid/xhci are modules in
-          # the CachyOS kernel, so their absence means autodetect ran.
-          grep -Eq 'usbhid' /tmp/initrd-list.txt
-          grep -Eq 'xhci' /tmp/initrd-list.txt
+          # keys off the CI container's hardware). Each driver must be in the
+          # initramfs as a module OR built into the kernel (modules.builtin —
+          # CachyOS builds usbhid in, for example).
+          builtin_list=$(cat /tmp/work/x86_64/airootfs/usr/lib/modules/*/modules.builtin)
+          for drv in usbhid xhci; do
+            grep -q "$drv" /tmp/initrd-list.txt || echo "$builtin_list" | grep -q "$drv"
+          done
           echo "✓ initramfs contains archiso hook + USB HID/xHCI drivers"
 
       - name: Report artifact
