@@ -89,7 +89,8 @@ jobs:
           set -euxo pipefail
           retry() { for i in 1 2 3 4 5; do "$@" && return 0; echo "attempt $i failed, retrying in 10s"; sleep 10; done; return 1; }
 
-          retry pacman -Syu --noconfirm archiso git curl sed grep
+          # mkinitcpio: provides lsinitcpio for the initramfs verification step
+          retry pacman -Syu --noconfirm archiso mkinitcpio git curl sed grep
           pacman-key --init
           retry curl -fsSL https://mirror.cachyos.org/cachyos-repo.tar.xz -o /tmp/cachyos-repo.tar.xz
           tar xf /tmp/cachyos-repo.tar.xz -C /tmp
