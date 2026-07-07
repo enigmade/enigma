@@ -141,7 +141,11 @@ jobs:
       - name: Verify live initramfs (archiso hook + USB input drivers)
         run: |
           set -euxo pipefail
-          initrd=/tmp/work/x86_64/airootfs/boot/initramfs-linux-cachyos.img
+          # mkarchiso moves boot images out of the airootfs into the ISO tree
+          # (work/iso/arch/boot/...) and cleans the airootfs copy, so locate
+          # the initramfs rather than hardcoding a stage-dependent path.
+          initrd=$(find /tmp/work -name 'initramfs-linux-cachyos.img' -print -quit)
+          test -n "$initrd"
           lsinitcpio "$initrd" > /tmp/initrd-list.txt
           # The archiso hook must be inside the initramfs or the live system
           # can never mount its squashfs (boot dies in the emergency shell).
