@@ -8,6 +8,19 @@ set -e
 echo "Enigma OS" > /etc/hostname
 sed -i 's/^#GRUB_BACKGROUND.*/GRUB_BACKGROUND="\/usr\/share\/pixmaps\/enigma-bg.png"/' /etc/default/grub 2>/dev/null || true
 
+# Locale + timezone: bake in sane defaults. Without these, systemd-firstboot
+# prompts interactively on the console for timezone/locale/root password on
+# every boot and blocks forever with no visible error on a live medium where
+# nobody is typing at a text prompt (caught by the SPEC §19 QEMU boot test —
+# the boot looked "stuck" but was actually just waiting on stdin). Masking
+# the service is the real fix; Calamares (installed systems) and our own
+# first-boot wizard own real first-boot configuration, not systemd-firstboot.
+echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
+locale-gen
+echo "LANG=en_US.UTF-8" > /etc/locale.conf
+ln -sf /usr/share/zoneinfo/UTC /etc/localtime
+systemctl mask systemd-firstboot.service
+
 # Configure SSH (disable by default in live mode)
 systemctl disable sshd.service || true
 
