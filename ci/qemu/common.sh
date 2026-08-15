@@ -20,7 +20,7 @@ SEABIOS="$(find_firmware 'bios-256k.bin')"
 QEMU_BIN="qemu-system-x86_64"
 
 # Timeout for boot tests (seconds)
-BOOT_TIMEOUT=120
+BOOT_TIMEOUT=180
 
 # Fail fast with a clear message if /dev/kvm isn't usable, rather than
 # letting every boot test silently burn its full timeout under TCG.

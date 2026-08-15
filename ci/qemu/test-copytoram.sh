@@ -43,7 +43,8 @@ echo "Serial log: $SERIAL_LOG"
 # Wait for boot to complete and image to load into RAM
 if ! wait_for_boot "$SERIAL_LOG" "graphical" "$BOOT_TIMEOUT"; then
     echo "✗ Copytoram test FAILED: boot did not complete"
-    tail -50 "$SERIAL_LOG"
+    echo "--- full serial log ($(wc -c < "$SERIAL_LOG" 2>/dev/null || echo 0) bytes) ---"
+    cat "$SERIAL_LOG"
     exit 1
 fi
 
@@ -75,6 +76,7 @@ if grep -q "Reached target graphical" "$SERIAL_LOG"; then
     exit 0
 else
     echo "✗ Copytoram mode test FAILED"
-    tail -50 "$SERIAL_LOG"
+    echo "--- full serial log ($(wc -c < "$SERIAL_LOG" 2>/dev/null || echo 0) bytes) ---"
+    cat "$SERIAL_LOG"
     exit 1
 fi

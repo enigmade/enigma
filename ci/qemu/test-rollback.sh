@@ -39,7 +39,8 @@ echo "Serial log: $SERIAL_LOG"
 # Wait for boot to complete
 if ! wait_for_boot "$SERIAL_LOG" "graphical" "$BOOT_TIMEOUT"; then
     echo "✗ Rollback test FAILED: system did not boot"
-    tail -50 "$SERIAL_LOG"
+    echo "--- full serial log ($(wc -c < "$SERIAL_LOG" 2>/dev/null || echo 0) bytes) ---"
+    cat "$SERIAL_LOG"
     exit 1
 fi
 
