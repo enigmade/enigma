@@ -4,16 +4,41 @@
 
 set -e
 
-# OVMF (UEFI) firmware paths
-OVMF_CODE="/usr/share/edk2/x64/OVMF_CODE.fd"
-OVMF_VARS="/usr/share/edk2/x64/OVMF_VARS.fd"
-SEABIOS="/usr/share/qemu/bios-256k.bin"
+# OVMF (UEFI) firmware paths. The edk2-ovmf package layout has changed
+# names across Arch releases (OVMF_CODE.fd vs OVMF_CODE.4m.fd etc), so
+# discover the actual files on disk rather than hardcoding one.
+find_firmware() {
+    local pattern="$1"
+    find /usr/share/edk2 /usr/share/OVMF /usr/share/qemu -iname "$pattern" 2>/dev/null | sort | head -1
+}
+OVMF_CODE="$(find_firmware 'OVMF_CODE*.fd')"
+OVMF_VARS="$(find_firmware 'OVMF_VARS*.fd')"
+SEABIOS="$(find_firmware 'bios-256k.bin')"
+[ -z "$SEABIOS" ] && SEABIOS="$(find_firmware 'bios.bin')"
 
 # QEMU binary
 QEMU_BIN="qemu-system-x86_64"
 
 # Timeout for boot tests (seconds)
 BOOT_TIMEOUT=120
+
+# Fail fast with a clear message if /dev/kvm isn't usable, rather than
+# letting every boot test silently burn its full timeout under TCG.
+require_kvm() {
+    if [ ! -e /dev/kvm ]; then
+        echo "ERROR: /dev/kvm not present — hardware virtualization is not"
+        echo "available to this runner/container. QEMU boot tests need KVM"
+        echo "acceleration (unaccelerated TCG boot of a full desktop session"
+        echo "would take far longer than any reasonable CI timeout)."
+        return 1
+    fi
+    if [ ! -r /dev/kvm ] || [ ! -w /dev/kvm ]; then
+        echo "ERROR: /dev/kvm exists but is not read/write accessible to this user."
+        ls -la /dev/kvm
+        return 1
+    fi
+    return 0
+}
 
 # Wait for a condition with timeout
 # Usage: wait_for_condition "command" "timeout_seconds" "description"
@@ -53,8 +78,10 @@ wait_for_boot() {
 # Check if a file exists (for disk write verification)
 check_file_exists() {
     local file="$1"
-    if [ ! -f "$file" ]; then
-        echo "ERROR: File not found: $file"
+    if [ -z "$file" ] || [ ! -f "$file" ]; then
+        echo "ERROR: File not found: '$file'"
+        echo "  Searched: /usr/share/edk2, /usr/share/OVMF, /usr/share/qemu"
+        find /usr/share/edk2 /usr/share/OVMF /usr/share/qemu -type f 2>/dev/null | head -20
         return 1
     fi
     return 0

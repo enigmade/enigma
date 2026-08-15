@@ -161,10 +161,52 @@ jobs:
           done
           echo "✓ initramfs contains archiso hook + USB HID/xHCI drivers"
 
+      - name: Install QEMU + OVMF firmware for boot tests
+        run: |
+          set -euxo pipefail
+          retry() { for i in 1 2 3 4 5; do "$@" && return 0; echo "attempt $i failed, retrying in 10s"; sleep 10; done; return 1; }
+          retry pacman -S --noconfirm edk2-ovmf
+          # The package name for the QEMU system-emulation target has moved
+          # across Arch releases (qemu-system-x86 vs qemu-full); try known
+          # candidates in order instead of hardcoding one.
+          pacman -S --noconfirm qemu-system-x86 qemu-img \
+            || pacman -S --noconfirm qemu-system-x86_64 qemu-img \
+            || retry pacman -S --noconfirm qemu-full
+          command -v qemu-system-x86_64 >/dev/null || { echo "::error::qemu-system-x86_64 not found after install attempts"; exit 1; }
+          command -v qemu-img >/dev/null || { echo "::error::qemu-img not found after install attempts"; exit 1; }
+          ls -la /dev/kvm || echo "::warning::/dev/kvm not present in this container — boot tests will fail fast with a clear message"
+
+      - name: SPEC §19 CI gate — QEMU boot matrix
+        run: |
+          set -euxo pipefail
+          mkdir -p /tmp/qemu-logs
+          iso=$(ls /tmp/out/*.iso)
+          echo "=== UEFI boot (OVMF) ==="
+          bash ci/qemu/boot-uefi.sh "$iso" /tmp/qemu-logs
+          echo "=== BIOS boot (SeaBIOS) ==="
+          bash ci/qemu/boot-bios.sh "$iso" /tmp/qemu-logs
+          echo "=== Live amnesic zero-write guarantee (SPEC §8) ==="
+          bash ci/qemu/test-amnesic.sh "$iso" /tmp/qemu-logs
+          echo "=== copytoram session stability (SPEC §8) ==="
+          bash ci/qemu/test-copytoram.sh "$iso" /tmp/qemu-logs
+          echo "=== Ventoy compatibility, basic (SPEC §17) ==="
+          bash ci/qemu/test-ventoy.sh "$iso" /tmp/qemu-logs
+          echo "✓ SPEC §19 QEMU boot matrix passed"
+
+      - name: Upload QEMU serial logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qemu-boot-logs
+          path: /tmp/qemu-logs/
+          retention-days: 14
+          if-no-files-found: ignore
+
       - name: Report artifact
         run: |
           ls -lh /tmp/out/
           echo "✓ Phase 1 gate: ISO built + boot structure verified (UEFI + BIOS)"
+          echo "✓ Phase 1 gate: QEMU boot matrix verified (UEFI, BIOS, amnesic, copytoram, Ventoy)"
 
       - name: Upload ISO
         uses: actions/upload-artifact@v4

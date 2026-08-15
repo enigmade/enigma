@@ -11,6 +11,7 @@ ISO="${1:?ISO path required}"
 LOGDIR="${2:-.}"
 
 [ -f "$ISO" ] || { echo "ERROR: ISO not found: $ISO"; exit 1; }
+require_kvm || exit 1
 check_file_exists "$OVMF_CODE" || exit 1
 
 SERIAL_LOG=$(create_serial_log "$LOGDIR")
@@ -63,7 +64,6 @@ sleep 5
 
 # Shutdown gracefully
 if [ -f "$PID_FILE" ]; then
-    local pid
     pid=$(cat "$PID_FILE")
     if kill -0 "$pid" 2>/dev/null; then
         kill -s SIGTERM "$pid" || true

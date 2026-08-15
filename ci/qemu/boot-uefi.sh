@@ -10,6 +10,7 @@ ISO="${1:?ISO path required}"
 LOGDIR="${2:-.}"
 
 [ -f "$ISO" ] || { echo "ERROR: ISO not found: $ISO"; exit 1; }
+require_kvm || exit 1
 check_file_exists "$OVMF_CODE" || exit 1
 
 SERIAL_LOG=$(create_serial_log "$LOGDIR")
