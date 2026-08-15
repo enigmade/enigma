@@ -10,6 +10,7 @@ on:
     branches: [main]
     paths:
       - 'iso/**'
+      - 'ci/qemu/**'
       - '.github/workflows/build-iso-real.yml'
   workflow_dispatch:
 
