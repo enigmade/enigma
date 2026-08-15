@@ -52,7 +52,6 @@ echo "Performing basic compatibility check (ISO as CD-ROM)..."
     -drive file="$ISO",format=raw,if=ide,media=cdrom \
     -serial file:"$SERIAL_LOG" \
     -display none \
-    -nographic \
     -daemonize \
     -pidfile "$PID_FILE" \
     -boot d

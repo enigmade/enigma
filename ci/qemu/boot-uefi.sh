@@ -35,7 +35,6 @@ trap 'cleanup_qemu "$PID_FILE"; rm -f "$OVMF_VARS_TMP"' EXIT
     -drive file="$ISO",format=raw,if=ide,media=cdrom \
     -serial file:"$SERIAL_LOG" \
     -display none \
-    -nographic \
     -daemonize \
     -pidfile "$PID_FILE" \
     -boot d

@@ -36,7 +36,6 @@ echo "Serial log: $SERIAL_LOG"
     -drive file="$ISO",format=raw,if=ide,media=cdrom,id=usb_iso \
     -serial file:"$SERIAL_LOG" \
     -display none \
-    -nographic \
     -daemonize \
     -pidfile "$PID_FILE" \
     -boot d

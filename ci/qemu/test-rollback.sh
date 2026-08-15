@@ -33,7 +33,6 @@ echo "Serial log: $SERIAL_LOG"
     -drive file="$INSTALLED_DISK",format=qcow2,if=virtio \
     -serial file:"$SERIAL_LOG" \
     -display none \
-    -nographic \
     -daemonize \
     -pidfile "$PID_FILE"
 
