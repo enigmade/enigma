@@ -40,7 +40,7 @@ trap 'cleanup_qemu "$PID_FILE"; rm -f "$OVMF_VARS_TMP"' EXIT
     -boot d
 
 # Wait for boot to complete
-if wait_for_boot "$SERIAL_LOG" "graphical" "$BOOT_TIMEOUT"; then
+if wait_for_boot "$SERIAL_LOG" "Graphical Interface" "$BOOT_TIMEOUT"; then
     echo "✓ UEFI boot test PASSED"
     exit 0
 else

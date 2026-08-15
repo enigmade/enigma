@@ -51,7 +51,7 @@ echo "Serial log: $SERIAL_LOG"
     -boot d
 
 # Wait for boot
-if ! wait_for_boot "$SERIAL_LOG" "graphical" "$BOOT_TIMEOUT"; then
+if ! wait_for_boot "$SERIAL_LOG" "Graphical Interface" "$BOOT_TIMEOUT"; then
     echo "✗ Amnesic test FAILED: boot did not complete"
     echo "--- full serial log ($(wc -c < "$SERIAL_LOG" 2>/dev/null || echo 0) bytes) ---"
     cat "$SERIAL_LOG"

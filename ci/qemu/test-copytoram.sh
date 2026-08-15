@@ -41,7 +41,7 @@ echo "Serial log: $SERIAL_LOG"
     -boot d
 
 # Wait for boot to complete and image to load into RAM
-if ! wait_for_boot "$SERIAL_LOG" "graphical" "$BOOT_TIMEOUT"; then
+if ! wait_for_boot "$SERIAL_LOG" "Graphical Interface" "$BOOT_TIMEOUT"; then
     echo "✗ Copytoram test FAILED: boot did not complete"
     echo "--- full serial log ($(wc -c < "$SERIAL_LOG" 2>/dev/null || echo 0) bytes) ---"
     cat "$SERIAL_LOG"
@@ -71,7 +71,7 @@ if [ -f "$PID_FILE" ]; then
 fi
 
 # If we reach here without QEMU crashing, the test passed
-if grep -q "Reached target graphical" "$SERIAL_LOG"; then
+if grep -q "Reached target Graphical Interface" "$SERIAL_LOG"; then
     echo "✓ Copytoram mode test PASSED: session remained stable"
     exit 0
 else

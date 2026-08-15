@@ -57,7 +57,7 @@ echo "Performing basic compatibility check (ISO as CD-ROM)..."
     -boot d
 
 # Wait for boot
-if wait_for_boot "$SERIAL_LOG" "graphical" "$BOOT_TIMEOUT"; then
+if wait_for_boot "$SERIAL_LOG" "Graphical Interface" "$BOOT_TIMEOUT"; then
     echo "✓ Ventoy compatibility test PASSED"
     exit 0
 else
