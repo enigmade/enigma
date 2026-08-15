@@ -71,7 +71,7 @@ if [ -f "$PID_FILE" ]; then
 fi
 
 # If we reach here without QEMU crashing, the test passed
-if grep -q "Reached target Graphical Interface" "$SERIAL_LOG"; then
+if grep_stripped "Reached target Graphical Interface" "$SERIAL_LOG"; then
     echo "✓ Copytoram mode test PASSED: session remained stable"
     exit 0
 else

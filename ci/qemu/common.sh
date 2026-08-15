@@ -64,6 +64,18 @@ wait_for_condition() {
     return 0
 }
 
+# Match a pattern against a serial log with ANSI/VT100 escape codes
+# stripped first. systemd colorizes the interesting part of its status
+# lines (e.g. "Reached target " + ESC[color + "Graphical Interface" +
+# ESC[reset), which splits what looks like one contiguous string with
+# invisible escape bytes — a plain grep never matches across that.
+# Usage: grep_stripped "pattern" "logfile"
+grep_stripped() {
+    local pattern="$1"
+    local file="$2"
+    sed -E 's/\x1b\[[0-9;]*[a-zA-Z]//g' "$file" 2>/dev/null | grep -q "$pattern"
+}
+
 # Wait for QEMU to reach a certain systemd target via serial output
 # Usage: wait_for_boot "logfile" "target" "timeout"
 wait_for_boot() {
@@ -71,7 +83,7 @@ wait_for_boot() {
     local target="$2"
     local timeout="${3:-$BOOT_TIMEOUT}"
 
-    wait_for_condition "grep -q 'Reached target $target' '$logfile'" "$timeout" \
+    wait_for_condition "grep_stripped 'Reached target $target' '$logfile'" "$timeout" \
         "boot to $target"
 }
 
