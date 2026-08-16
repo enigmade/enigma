@@ -19,8 +19,14 @@ pacman_conf="pacman.conf"
 # real hardware vs. erofs.
 airootfs_image_type="squashfs"
 airootfs_image_tool_options=('-comp' 'zstd' '-Xcompression-level' '15' '-b' '1M')
-# archiso expects "owner:group:mode" here. The previous values were a bare
-# mode ("0755"), which made archiso run `chown -fh 0755: <file>` and
+# EVERY executable shipped in airootfs/ must be listed here. mkarchiso copies
+# the tree with `cp -af --no-preserve=ownership,mode`, so it deliberately
+# discards the modes the files have in git — this table is the only thing that
+# makes anything executable on the ISO.
+#
+# The value format is "owner:group:mode" (mkarchiso splits it on ':' into
+# chown owner:group + chmod mode). The previous values were a bare mode
+# ("0755"), which made archiso run `chown -fh 0755: <file>` and
 # `chmod -f "" <file>` — both invalid, and both silenced by their -f flag, so
 # every entry below was quietly a no-op. Most visibly that left the installer
 # launcher on the live desktop non-executable, and Plasma refuses to run a
