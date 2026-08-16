@@ -44,7 +44,9 @@ TEMPLATE_OPTIONS=$(grep -E '^\s*options\s' "$TEMPLATE" | head -1 | sed -E 's/^\s
 # Remove previously generated entries. A glob cannot be tested with -f, so let
 # the loop itself handle the no-match case.
 for old in "$LOADER_DIR"/snapshot-*.conf; do
-    [ -e "$old" ] && rm -f "$old"
+    if [ -e "$old" ]; then
+        rm -f "$old"
+    fi
 done
 
 SNAPSHOTS=$(snapper -c root list --columns number,date -t single 2>/dev/null \

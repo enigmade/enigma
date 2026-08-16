@@ -21,8 +21,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install shellcheck + yq
-        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      # Pinned rather than apt's shellcheck: the runner image's version drifts
+      # (24.04 ships 0.9.0), and each release adds or retunes checks, so an
+      # unpinned linter turns a green gate red on an unrelated image bump.
+      - name: Install shellcheck (pinned)
+        env:
+          SHELLCHECK_VERSION: v0.11.0
+        run: |
+          set -euxo pipefail
+          curl -fsSL "https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/shellcheck-${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" \
+            | tar -xJ -C /tmp
+          sudo install -m755 "/tmp/shellcheck-${SHELLCHECK_VERSION}/shellcheck" /usr/local/bin/shellcheck
+          shellcheck --version
 
       # CLAUDE.md: shellcheck-clean on all hooks.
       # Global exclusions, both deliberate patterns in the QEMU test harness:
@@ -37,7 +47,13 @@ jobs:
           set -uo pipefail
           rc=0
           check() {
-            shellcheck -e SC1091,SC2064 "$@" || rc=1
+            # Last arg is the file; report it explicitly so a failure names the
+            # script rather than leaving it to be inferred from the diagnostics.
+            local f="${*: -1}"
+            if ! shellcheck -e SC1091,SC2064 "$@"; then
+              echo "::error file=${f}::shellcheck reported findings in ${f}"
+              rc=1
+            fi
           }
           while read -r f; do
             case "$f" in
