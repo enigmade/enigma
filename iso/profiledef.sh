@@ -19,8 +19,29 @@ pacman_conf="pacman.conf"
 # real hardware vs. erofs.
 airootfs_image_type="squashfs"
 airootfs_image_tool_options=('-comp' 'zstd' '-Xcompression-level' '15' '-b' '1M')
+# archiso expects "owner:group:mode" here. The previous values were a bare
+# mode ("0755"), which made archiso run `chown -fh 0755: <file>` and
+# `chmod -f "" <file>` — both invalid, and both silenced by their -f flag, so
+# every entry below was quietly a no-op. Most visibly that left the installer
+# launcher on the live desktop non-executable, and Plasma refuses to run a
+# .desktop file that is not executable: clicking "Install Enigma OS" did
+# nothing at all.
 file_permissions=(
-  ["/root/.automated_script.sh"]="0755"
-  ["/root/.customize_airootfs.sh"]="0755"
-  ["/etc/shadow"]="0400"
+  ["/etc/shadow"]="0:0:400"
+  ["/etc/gshadow"]="0:0:400"
+  ["/root"]="0:0:750"
+  ["/root/customize_airootfs.sh"]="0:0:755"
+  # Launched by the live user from the desktop icon / autostart.
+  ["/usr/local/bin/enigma"]="0:0:755"
+  ["/usr/local/bin/enigma-hwdetect"]="0:0:755"
+  ["/usr/local/bin/enigma-install"]="0:0:755"
+  ["/usr/local/bin/enigma-install-autostart"]="0:0:755"
+  # Installer-side repair scripts invoked by Calamares shellprocess modules.
+  ["/usr/local/libexec/enigma-install-cleanup.sh"]="0:0:755"
+  ["/usr/local/libexec/enigma-install-restore-boot.sh"]="0:0:755"
+  ["/usr/local/libexec/enigma-install-initramfs.sh"]="0:0:755"
+  ["/usr/local/libexec/enigma-generate-snapshot-entries.sh"]="0:0:755"
+  # Plasma will not launch a desktop entry that lacks the executable bit.
+  ["/etc/skel/Desktop/install-enigma-os.desktop"]="0:0:755"
+  ["/etc/skel/.config/autostart/enigma-install.desktop"]="0:0:755"
 )

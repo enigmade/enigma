@@ -1,0 +1,38 @@
+#!/bin/bash
+# Launch the Enigma OS installer (Calamares) as root from the live session.
+#
+# WHY A WRAPPER
+# The obvious `Exec=pkexec calamares` does not work in a Wayland session:
+# pkexec deliberately scrubs the environment down to a small whitelist that
+# excludes WAYLAND_DISPLAY, XDG_RUNTIME_DIR, DISPLAY and XAUTHORITY. A Qt app
+# started that way has no way to reach the compositor and dies with
+# "could not connect to display" — the user clicks Install and nothing happens.
+#
+# The live user is in `wheel` and wheel has NOPASSWD sudo on the ISO (see
+# customize_airootfs.sh), so sudo needs no prompt. The display variables are
+# passed through explicitly with `env` rather than `sudo -E`, because -E needs
+# the SETENV tag in sudoers and would otherwise fail outright.
+
+set -euo pipefail
+
+if ! command -v calamares >/dev/null 2>&1; then
+    echo "ERROR: calamares is not installed on this medium." >&2
+    exit 1
+fi
+
+# Already root (e.g. launched from the root console): run directly.
+if [ "$(id -u)" -eq 0 ]; then
+    exec calamares -d
+fi
+
+# Root needs the invoking user's runtime dir to find the compositor socket at
+# $XDG_RUNTIME_DIR/$WAYLAND_DISPLAY. Root bypasses the directory permissions,
+# so handing over the path is enough.
+exec sudo -- env \
+    XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-}" \
+    WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-}" \
+    DISPLAY="${DISPLAY:-}" \
+    XAUTHORITY="${XAUTHORITY:-}" \
+    XDG_SESSION_TYPE="${XDG_SESSION_TYPE:-}" \
+    QT_QPA_PLATFORM="${QT_QPA_PLATFORM:-}" \
+    calamares -d

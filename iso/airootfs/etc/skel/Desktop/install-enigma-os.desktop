@@ -4,6 +4,6 @@ Version=1.0
 Name=Install Enigma OS
 Comment=Install Enigma OS to this computer
 Icon=calamares
-Exec=pkexec calamares
+Exec=/usr/local/bin/enigma-install
 Terminal=false
 Categories=System;

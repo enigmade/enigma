@@ -6,6 +6,11 @@ base
 linux-cachyos
 linux-lts
 linux-firmware
+# Early CPU microcode; the `microcode` initramfs hook loads these.
+amd-ucode
+intel-ucode
+# Audio firmware — without it most recent laptops have no sound at all.
+sof-firmware
 
 # CachyOS base
 cachyos-keyring
@@ -60,6 +65,22 @@ pipewire
 pipewire-alsa
 pipewire-jack
 wireplumber
+
+# Plasma session essentials. Each is the difference between a desktop that
+# looks fine and one a user cannot actually operate.
+# Network applet — without it there is no way to join wi-fi in the live
+# session, which also means no network during the install.
+plasma-nm
+# Volume applet.
+plasma-pa
+# Display / multi-monitor configuration.
+kscreen
+# Without a polkit agent running, no privilege prompt can ever be answered.
+polkit-kde-agent
+# X11 applications inside the Wayland session.
+xorg-xwayland
+# OpenGL/EGL drivers for the compositor.
+mesa
 
 # Display manager
 sddm

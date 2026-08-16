@@ -1,0 +1,18 @@
+#!/bin/bash
+# Auto-start the installer, but ONLY when the user picked "Install Enigma OS"
+# in the boot menu.
+#
+# The three boot menu entries (SPEC §8) previously carried identical kernel
+# command lines, so "Install Enigma OS" and "Live session (amnesic)" booted to
+# exactly the same desktop and neither started an installer. The boot entries
+# now tag themselves with enigma_mode=; this reads that tag.
+#
+# Exits silently in live mode so the same autostart file can ship in both.
+
+set -euo pipefail
+
+if ! grep -qw 'enigma_mode=install' /proc/cmdline 2>/dev/null; then
+    exit 0
+fi
+
+exec /usr/local/bin/enigma-install

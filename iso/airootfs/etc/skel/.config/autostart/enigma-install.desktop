@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Enigma OS Installer
+Comment=Starts the installer automatically when booted from the Install menu entry
+Exec=/usr/local/bin/enigma-install-autostart
+Terminal=false
+NoDisplay=true
+X-KDE-autostart-phase=2

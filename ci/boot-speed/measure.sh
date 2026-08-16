@@ -23,7 +23,19 @@ cp "$OVMF_VARS" "$OVMF_VARS_TMP"
 SERIAL_LOG=$(mktemp)
 PID_FILE=$(mktemp)
 
-trap "[ -f '$PID_FILE' ] && kill $(cat '$PID_FILE') 2>/dev/null || true; rm -f '$OVMF_VARS_TMP' '$SERIAL_LOG'" EXIT
+# The cleanup body must run at EXIT, not now. The previous one-liner ran
+# `$(cat '$PID_FILE')` at trap-definition time — before QEMU had even started,
+# so the pidfile was still empty — and the single quotes meant cat looked for a
+# file literally named "$PID_FILE". The result was a trap that never killed the
+# QEMU process it was meant to reap. A function keeps the expansion deferred.
+# shellcheck disable=SC2329  # invoked indirectly by the EXIT trap below
+cleanup_boot_speed() {
+    if [ -s "$PID_FILE" ]; then
+        kill "$(cat "$PID_FILE")" 2>/dev/null || true
+    fi
+    rm -f "$OVMF_VARS_TMP" "$SERIAL_LOG" "$PID_FILE"
+}
+trap cleanup_boot_speed EXIT
 
 echo "Measuring boot speed from: $INSTALLED_DISK"
 echo "Serial log: $SERIAL_LOG"

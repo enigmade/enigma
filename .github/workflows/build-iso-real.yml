@@ -15,8 +15,93 @@ on:
   workflow_dispatch:
 
 jobs:
+  static-checks:
+    name: Shellcheck + installer config validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install shellcheck + yq
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      # CLAUDE.md: shellcheck-clean on all hooks.
+      # Global exclusions, both deliberate patterns in the QEMU test harness:
+      #   SC1091 - `source "$(dirname "$0")/common.sh"` cannot be followed
+      #            statically; the path is correct at runtime.
+      #   SC2064 - the EXIT traps intentionally expand now, capturing the
+      #            temp-file paths that are already set at trap-definition time.
+      # SC2034 is excluded only for profiledef.sh, whose variables are consumed
+      # by mkarchiso sourcing the file rather than used locally.
+      - name: Shellcheck all ISO/CI shell scripts
+        run: |
+          set -uo pipefail
+          rc=0
+          check() {
+            shellcheck -e SC1091,SC2064 "$@" || rc=1
+          }
+          while read -r f; do
+            case "$f" in
+              */profiledef.sh) check -e SC2034 "$f" ;;
+              *)               check "$f" ;;
+            esac
+          done < <(find iso ci -type f \( -name '*.sh' -o -name 'profiledef.sh' \) | sort)
+          # Extensionless scripts with a shell shebang (installer launchers).
+          while read -r f; do
+            if head -1 "$f" | grep -q '^#!.*\(bash\|sh\)'; then check "$f"; fi
+          done < <(find iso/airootfs/usr/local/bin -type f | sort)
+          [ $rc -eq 0 ] && echo "✓ shellcheck clean"
+          exit $rc
+
+      # Guards the class of bug that shipped an unbootable installed system:
+      # mkarchiso deletes /boot from the airootfs, so unless the Calamares
+      # sequence restores the kernel and regenerates the initramfs, every
+      # install produces a machine that cannot boot.
+      - name: Validate Calamares install sequence
+        run: |
+          set -euo pipefail
+          cal=iso/airootfs/usr/share/enigma/calamares
+          settings=$cal/settings.conf
+          fail=0
+
+          need_step() {
+            grep -qE "^\s*-\s*$1\s*$" "$settings" \
+              || { echo "::error::settings.conf exec sequence is missing '$1'"; fail=1; }
+          }
+          # Without these three the installed system has no kernel, no
+          # initramfs, or boot entries pointing at files that do not exist.
+          need_step "shellprocess@restoreboot"
+          need_step "shellprocess@initramfs"
+          need_step "bootloader"
+
+          # Ordering is load-bearing: kernel restored -> initramfs built ->
+          # bootloader entries written.
+          order() { grep -nE "^\s*-\s*$1\s*$" "$settings" | head -1 | cut -d: -f1; }
+          r=$(order "shellprocess@restoreboot"); i=$(order "shellprocess@initramfs")
+          b=$(order "bootloader");              c=$(order "shellprocess@cleanup")
+          u=$(order "unpackfs")
+          for pair in "$u:$c" "$c:$r" "$r:$i" "$i:$b"; do
+            a=${pair%:*}; z=${pair#*:}
+            [ -n "$a" ] && [ -n "$z" ] && [ "$a" -lt "$z" ] || {
+              echo "::error::Calamares exec steps are out of order (line $a must precede $z)"; fail=1; }
+          done
+
+          # Every module named in `instances:` must have its config present,
+          # and every script a shellprocess invokes must exist + be executable.
+          while read -r conf; do
+            [ -f "$cal/modules/$conf" ] || { echo "::error::missing module config: $conf"; fail=1; }
+          done < <(grep -oE 'config:\s*\S+' "$settings" | awk '{print $2}')
+
+          while read -r script; do
+            [ -x "iso/airootfs$script" ] || {
+              echo "::error::installer script not found or not executable: $script"; fail=1; }
+          done < <(grep -ohE '/usr/local/libexec/[a-z0-9-]+\.sh' "$cal"/modules/*.conf | sort -u)
+
+          [ "$fail" -eq 0 ] && echo "✓ Calamares install sequence is complete and correctly ordered"
+          exit $fail
+
   resolve-packages:
     name: Validate package list resolves
+    needs: static-checks
     runs-on: ubuntu-latest
     container:
       image: archlinux:latest
