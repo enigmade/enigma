@@ -1,6 +1,33 @@
 # Enigma OS — Phase Status & Known Gaps
 
-**Last updated**: Phase 1 complete (ISO builds, boots UEFI+BIOS, amnesic guarantee proven)
+**Last updated**: Phase 2 reopened — the installer produced an unbootable
+system and no CI gate covered it.
+
+## ⚠ Correction to the "Phase 2 COMPLETE" claim below
+
+Phase 2 was marked complete on the strength of a green ISO build and a green
+QEMU boot matrix. Neither of those tests an install. In practice every install
+produced a machine that could not boot: `mkarchiso` deletes `/boot` from the
+airootfs before building `airootfs.sfs`, Calamares installs by copying that
+squashfs to disk, and the sequence had no step that restored a kernel or
+generated an initramfs — so the bootloader wrote entries pointing at files
+that did not exist.
+
+Fixed in `5c8b5ae` (kernel restore + initramfs generation + live-config
+strip, plus distinct boot menu entries and a launchable installer icon).
+
+**The honest status: the ISO gate is green, the install path is not yet
+gated.** SPEC §19 requires a green CI gate before a phase is done, and the
+one gate that matters here does not exist yet:
+
+- [ ] Automated QEMU install test: boot the ISO, drive Calamares to
+      completion, reboot the virtual disk, assert the installed system
+      reaches graphical.target. Until this exists, "the installer works" is
+      a claim backed only by manual testing.
+- [x] Static guard (added with the fix): CI now fails if the Calamares
+      sequence is missing the kernel-restore / initramfs / bootloader steps
+      or has them out of order. This catches a regression of the specific
+      bug above, but it is a config check, not proof that an install boots.
 
 ## Phase 1 Status: ✓ COMPLETE
 
